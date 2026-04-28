@@ -97,10 +97,19 @@ if (-not (Test-Path $rootAvdZip)) {
     Expand-Archive -Path $rootAvdZip -DestinationPath $tools -Force
 }
 
-Write-Host "Looking up latest Play Integrity Fix release..." -ForegroundColor Cyan
-$pifApi = 'https://api.github.com/repos/chiteroman/PlayIntegrityFix/releases/latest'
-$pif = Invoke-RestMethod -Uri $pifApi -Headers @{ 'User-Agent' = 'snap-mobile-setup' }
-$pifAsset = $pif.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1
+Write-Host "Looking up latest PlayIntegrityFork release..." -ForegroundColor Cyan
+# The original chiteroman/PlayIntegrityFix was discontinued. osm0sis/PlayIntegrityFork
+# is the actively maintained successor.
+$pifRepo = 'osm0sis/PlayIntegrityFork'
+$pifReleasesPage = "https://github.com/$pifRepo/releases/latest"
+$pifApi = "https://api.github.com/repos/$pifRepo/releases/latest"
+$pifAsset = $null
+try {
+    $pif = Invoke-RestMethod -Uri $pifApi -Headers @{ 'User-Agent' = 'snap-mobile-setup' }
+    $pifAsset = $pif.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1
+} catch {
+    Write-Warning "GitHub API call failed ($($_.Exception.Message))."
+}
 if ($pifAsset) {
     $pifPath = Join-Path $tools $pifAsset.name
     if (-not (Test-Path $pifPath)) {
@@ -108,7 +117,10 @@ if ($pifAsset) {
     }
     Write-Host "PIF module: $pifPath" -ForegroundColor Green
 } else {
-    Write-Warning "Couldn't find PIF release asset. Grab it manually from https://github.com/chiteroman/PlayIntegrityFix/releases"
+    Write-Warning "Couldn't auto-download the PlayIntegrityFork zip."
+    Write-Warning "Open $pifReleasesPage in a browser, download the .zip asset, and save it into:"
+    Write-Warning "    $tools"
+    Write-Warning "Then continue with the README from Step 3."
 }
 
 @"
@@ -127,7 +139,7 @@ Next steps (see windows\README.md for the full walkthrough):
      .\rootAVD.bat <ramdisk path>     # patch it with Magisk
   3. .\launch.ps1                     # boot again, open Magisk app, accept the prompt to finish install, reboot
   4. Push the PIF zip into the emulator and install it from Magisk:
-        adb push tools\$($pifAsset.name) /sdcard/Download/
+        adb push tools\$(if ($pifAsset) { $pifAsset.name } else { 'PlayIntegrityFork_*.zip' }) /sdcard/Download/
      Then in Magisk > Modules > Install from storage, pick that file, reboot.
   5. Sign into Google Play (in the emulator), then install Snapchat from the Play Store.
 "@ | Write-Host

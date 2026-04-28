@@ -5,7 +5,8 @@ Goal: run the genuine Snapchat Android app on your Windows machine so that
 for Web."
 
 This works by running an Android Virtual Device (AVD) that's been rooted with
-Magisk and patched with the **Play Integrity Fix** module, which makes
+Magisk and patched with the **PlayIntegrityFork** Magisk module (the actively
+maintained successor to the discontinued PlayIntegrityFix), which makes
 Snapchat's anti-emulator checks pass.
 
 > Reality check: Snapchat updates its detection. This setup works for most
@@ -45,7 +46,11 @@ Android 14, Play Store), and downloads the two helpers we need into
 `windows\tools\`:
 
 - **rootAVD** — patches the AVD's ramdisk so Magisk can install.
-- **PlayIntegrityFix.zip** — the Magisk module that makes integrity checks pass.
+- **PlayIntegrityFork zip** — the Magisk module that makes integrity checks pass.
+
+If the script can't auto-download the PIF zip (GitHub API rate-limit, repo
+moves, etc.) it'll print a fallback URL — open it in a browser, grab the
+`.zip`, and drop it in `windows\tools\`.
 
 ---
 
@@ -91,12 +96,12 @@ Open the **Magisk** app inside the AVD. It will ask to finish setup — tap
 
 ---
 
-## Step 4 — Install the Play Integrity Fix module
+## Step 4 — Install the PlayIntegrityFork module
 
 Push the PIF zip into the emulator (with the AVD still running):
 
 ```powershell
-$pif = Get-ChildItem tools\PlayIntegrityFix*.zip | Select-Object -First 1
+$pif = Get-ChildItem tools\PlayIntegrityFork*.zip | Select-Object -First 1
 adb push $pif.FullName /sdcard/Download/
 ```
 
@@ -183,5 +188,5 @@ windows\
   install-snap.ps1 # adb install a Snapchat APK
   tools\
     rootAVD-master\          # Magisk-into-AVD patcher
-    PlayIntegrityFix-*.zip   # Magisk module
+    PlayIntegrityFork_*.zip  # Magisk module
 ```
