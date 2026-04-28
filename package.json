@@ -1,0 +1,14 @@
+{
+  "name": "snap-mobile",
+  "version": "1.0.0",
+  "description": "Run Snapchat Web with full mobile device emulation so it behaves like the phone app.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}
